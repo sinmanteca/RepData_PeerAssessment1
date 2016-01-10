@@ -173,8 +173,8 @@ xyplot(mean ~ time | weekday,
        data = stepsByWeekday,
        type = "l",
        layout = c(1,2),
-       main = "Average steps per 5-minute interval",
-       xlab = "5-minute interval",
+       main = "Average steps by Time of Day",
+       xlab = "Time of Day (5-minute intervals)",
        ylab = "Number of steps",
       scales = list(
         x = list(
