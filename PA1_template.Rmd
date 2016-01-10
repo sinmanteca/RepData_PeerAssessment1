@@ -67,27 +67,39 @@ stepsPerInterval <- data %>%
     group_by(interval) %>% 
     summarize(intervalSteps = mean(steps, na.rm = TRUE))
 
-## sort by decreasing average steps per interval and take first row
-maxStepsInterval <- stepsPerInterval[order(stepsPerInterval$intervalSteps, decreasing = TRUE), ][1, ]$interval
 
-## plot line graph of average steps per 5-minute interval
-with(stepsPerInterval, plot(interval, intervalSteps, 
+## convert interval to time format
+stepsPerInterval$hour <- with(stepsPerInterval, substr(interval, nchar(interval)-3, nchar(interval)-2))
+
+stepsPerInterval$hour[stepsPerInterval$hour==""] <- 0
+
+stepsPerInterval$min <- stepsPerInterval$interval - as.numeric(stepsPerInterval$hour)*100
+
+stepsPerInterval$time <- as.POSIXct(strptime(paste(stepsPerInterval$hour, stepsPerInterval$min, sep=":"), "%H:%M"))   
+
+## sort by decreasing average steps per interval and take first row
+maxStepsInterval <- stepsPerInterval[order(stepsPerInterval$intervalSteps, decreasing = TRUE), ][1, ]$time
+
+## plot average steps by time of day
+with(stepsPerInterval,
+    plot(time, intervalSteps, 
                             type="l", 
-                            main = "Average Steps per 5-minute Interval",
-                            xlab = "5-minute Interval",
+                            main = "Average Steps By Time of Day",
+                            xlab = "Time of Day (5-minute intervals)",
                             ylab = "Average Steps"))
-abline(v = maxStepsInterval, col = "red")     ## show interval with the max steps
+abline(v = as.numeric(maxStepsInterval), col = "red")     ## show interval with the max steps
 text(maxStepsInterval, 50, "max steps",       ## label max steps line
      pos = 2, 
      offset = 0.5, 
      srt = 90, 
      col = "red", 
-     cex = 0.8)
+     cex = 0.8
+)
 
 ```
 
 ### Results:
-On average, the maximum number of steps occurs in interval **`r maxStepsInterval`**.  
+On average, the maximum number of steps occurs at **`r strftime(maxStepsInterval, format = "%H:%M")`**.  
 
 ## Imputing missing values
 
@@ -98,7 +110,7 @@ Missing values will be imputed using the average steps for each interval.
 missing <- sum(is.na(data$steps))
 
 ## use mean for 5-minute interval to impute missing values
-dataImp <- merge(data, stepsPerInterval, by = "interval")
+dataImp <- merge(data, stepsPerInterval[,1:2], by = "interval")
 dataImp$steps[is.na(dataImp$steps)] <- dataImp$intervalSteps[is.na(dataImp$steps)]
 
 ## recalculate total steps per day using imputed values
@@ -145,15 +157,29 @@ stepsByWeekday <- dataImp %>%
     group_by(weekday, interval) %>%
     summarize(mean = mean(steps))
 
+## convert interval to time format
+stepsByWeekday$hour <- with(stepsByWeekday, substr(interval, nchar(interval)-3, nchar(interval)-2))
+
+stepsByWeekday$hour[stepsByWeekday$hour==""] <- 0
+
+stepsByWeekday$min <- stepsByWeekday$interval - as.numeric(stepsByWeekday$hour)*100
+
+stepsByWeekday$time <- as.POSIXct(strptime(paste(stepsByWeekday$hour, stepsByWeekday$min, sep=":"), "%H:%M")) 
+
 ## plot in lattice
-xyplot(mean ~ interval | weekday,
+xyplot(mean ~ time | weekday,
        data = stepsByWeekday,
        type = "l",
        layout = c(1,2),
        main = "Average steps per 5-minute interval",
        xlab = "5-minute interval",
-       ylab = "Number of steps"
-       )
+       ylab = "Number of steps",
+      scales = list(
+        x = list(
+          format = "%H:%M"
+        )
+      )
+)
 ```
 
 ### Results:
