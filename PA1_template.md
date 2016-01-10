@@ -1,11 +1,7 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
     
-```{r setoptions}
+
+```r
 ## prevent markdown from showing scientific notation for small numbers
 options(scipen = 999, digits = 2)
 ```
@@ -13,7 +9,8 @@ options(scipen = 999, digits = 2)
 ## Loading and preprocessing the data
 
 The following code will load and process the data:
-```{r}
+
+```r
 ## check if file exists and extract zip if necessary
 if(!file.exists("data/activity.csv")) {
     unzip("activity.zip", exdir = "data")
@@ -22,12 +19,13 @@ if(!file.exists("data/activity.csv")) {
 ## read data and convert date column to date format
 data <- read.csv("./data/activity.csv", stringsAsFactors = FALSE)
 data$date <- as.Date(data$date)
-``` 
+```
 
 ## What is mean total number of steps taken per day?
 
 The *dplyr* library will be used to aggregate daily totals. The histogram is plotted with the base plotting package:
-``` {r message = FALSE}
+
+```r
 ## use dplyr library to calculate total steps per day
 library(dplyr)
 
@@ -51,17 +49,18 @@ text(medianSteps, 3, "median",                  ## label median line
      srt = 90, 
      col = "red", 
      cex = 0.8)
-
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
 ### Results
-Ignoring missing values, the mean steps per day is **`r meanSteps`** and the median steps per day is **`r medianSteps`**.
+Ignoring missing values, the mean steps per day is **10766.19** and the median steps per day is **10765**.
 
 ## What is the average daily activity pattern?
 
 The *dplyr* library is used again to aggregate by 5-minute interval and the interval with the most average steps is found by sorting the data frame in decreasing order and taking the value from the first row value:
-```{r}
 
+```r
 ## calculate mean steps per 5-minute interval
 stepsPerInterval <- data %>% 
     group_by(interval) %>% 
@@ -83,17 +82,18 @@ text(maxStepsInterval, 50, "max steps",       ## label max steps line
      srt = 90, 
      col = "red", 
      cex = 0.8)
-
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 ### Results:
-On average, the maximum number of steps occurs in interval **`r maxStepsInterval`**.  
+On average, the maximum number of steps occurs in interval **835**.  
 
 ## Imputing missing values
 
 Missing values will be imputed using the average steps for each interval.
-```{r}
 
+```r
 ## find number of NAs
 missing <- sum(is.na(data$steps))
 
@@ -124,16 +124,18 @@ text(medianSteps, 5, "median",                     ## label median line
      cex = 0.8)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
 ### Results:
-There are **`r missing`** missing values in the original dataset. Including imputed values, the mean steps per day is **`r meanStepsImp`** and the median steps per day is **`r medianStepsImp`**.  
+There are **2304** missing values in the original dataset. Including imputed values, the mean steps per day is **10766.19** and the median steps per day is **10766.19**.  
 
 Using the average steps per interval to impute values has the effect of keeping the mean stable. However, because there were a number of full days that were missing all values, these days all have identical, imputed values. This has biased the centre of the distribution, producing a median that is identical to the mean. While this is only a slight difference from the median that was calculated without missing values, the influence on the variance is larger.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 The *weekdays* function and the *lattice* package will be used to answer this question:
-```{r}
 
+```r
 library(lattice)
 
 ## identify weekdays and convert to factor variable
@@ -155,6 +157,8 @@ xyplot(mean ~ interval | weekday,
        ylab = "Number of steps"
        )
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
 ### Results:
 The number of steps appears to peak on Weekays around the 800th interval with lower levels of activity (generally below 100 steps per interval) over the rest of the day. On weekends, the number of steps start and end a bit later in the day and the activity level remains more consistent (around 150 steps per interval) throughout the day.
